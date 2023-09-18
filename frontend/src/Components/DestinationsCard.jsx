@@ -25,13 +25,21 @@ import { ProductDetails } from "./ProductDetails";
 
 export const DestinationsCard = ({ prop, Loading }) => {
   console.log(prop);
-  let { id, image_url, fees, grade, destination_title, location, description } =
-    prop;
+  let {
+    _id,
+    image,
+    fees,
+    rating,
+    destination,
+    location,
+    description,
+    attractions,
+  } = prop;
   let Ratings = "";
 
   const star = new Array(5);
   for (let i = 1; i <= 5; i++) {
-    if (i <= grade) {
+    if (i <= rating) {
       star[i] = 1;
     } else {
       star[i] = 0;
@@ -43,9 +51,9 @@ export const DestinationsCard = ({ prop, Loading }) => {
       <CardBody>
         <Box height={"150px"} width={"350px"} position={"relative"}>
           <center position="absolute" top={0} left={0}>
-            {image_url ? (
+            {image ? (
               <Image
-                src={image_url}
+                src={image}
                 boxSize="350px 200px "
                 borderRadius="xl"
                 objectFit="cover"
@@ -71,7 +79,7 @@ export const DestinationsCard = ({ prop, Loading }) => {
         <Box height={"150px"}>
           <Stack mt="2">
             <p size="md">
-              <i className="fa-solid fa-location-dot"></i> {destination_title}
+              <i className="fa-solid fa-location-dot"></i> {destination}
             </p>
             <Heading as={"h6"} fontSize={"2xl"}>
               {location}
@@ -96,7 +104,7 @@ export const DestinationsCard = ({ prop, Loading }) => {
         </Text>
         <CardFooter justifyContent={"space-around"}>
           <Button colorScheme="yellow">
-            <Link to={`/destination/${id}`}>Book Now</Link>
+            <Link to={`/destination/${_id}`}>Book Now</Link>
           </Button>
         </CardFooter>
       </CardBody>

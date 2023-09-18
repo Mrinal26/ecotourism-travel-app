@@ -26,7 +26,7 @@ import { PhoneIcon, AddIcon, WarningIcon } from "@chakra-ui/icons";
 import { BsEyeSlashFill, BsEyeFill } from "react-icons/bs";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../Context/AuthContextProvider";
-
+import axios from "axios";
 const Signin = () => {
   const { auth, login, logout } = useContext(AuthContext);
   const [show, setShow] = useState(false);
@@ -41,80 +41,44 @@ const Signin = () => {
     setShow(!show);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const existingUserData = JSON.parse(localStorage.getItem("userData")) || [];
 
-    const user = existingUserData.find(
-      (user) => user.email === email && user.password === password
-    );
-    const emailExists = existingUserData.find((user) => user.email === email);
-    const passwordExists = existingUserData.find(
-      (user) => user.password === password
-    );
+    setIsLoading(true);
+    const payload = {
+      email,
+      password,
+    };
+    const users = await axios
+      .post("https://long-puce-octopus-wrap.cyclic.cloud/login", payload)
+      .then((res) => {
+        if (res.data.token) {
+          localStorage.setItem("userToken", `Bearer ${res.data.token}`);
+          setTimeout(() => {
+            setIsLoading(false);
 
-    if (email === "" && password === "") {
-      toast({
-        title: "Please Fill All Details",
-        status: "error",
-        duration: 1500,
-        isClosable: true,
-        colorScheme: "red",
-      });
-    } else if (email === "") {
-      toast({
-        title: "Please Enter Email",
-        status: "error",
-        duration: 1500,
-        isClosable: true,
-        colorScheme: "red",
-      });
-    } else if (password === "") {
-      toast({
-        title: "Please Enter Password",
-        status: "error",
-        duration: 1500,
-        isClosable: true,
-        colorScheme: "red",
-      });
-    } else if (!emailExists) {
-      toast({
-        title: "Wrong Email.",
-        status: "error",
-        duration: 1500,
-        isClosable: true,
-        colorScheme: "red",
-      });
-    } else if (!passwordExists) {
-      toast({
-        title: "Wrong Password.",
-        status: "error",
-        duration: 1500,
-        isClosable: true,
-        colorScheme: "red",
-      });
-    } else if (!user) {
-      toast({
-        title: "Wrong Credentials.",
-        status: "error",
-        duration: 1500,
-        isClosable: true,
-        colorScheme: "red",
-      });
-    } else {
-      setIsLoading(true);
+            toast({
+              title: "Logged In Successfully.",
+              status: "success",
+              duration: 2000,
+              isClosable: true,
+            });
+            login();
+          }, 1000);
+        } else {
+          setIsLoading(false);
 
-      setTimeout(() => {
-        setIsLoading(false);
-        toast({
-          title: "Logged In Successfully.",
-          status: "success",
-          duration: 2000,
-          isClosable: true,
-        });
-      }, 1000);
-      login();
-    }
+          toast({
+            title: "User not found",
+            status: "error",
+            duration: 2000,
+            isClosable: true,
+          });
+        }
+      })
+      .catch((e) => {
+        console.log("asd");
+      });
   };
   if (auth) return <Navigate to="/" />;
   return (
