@@ -16,7 +16,7 @@ import { DestinationsCard } from "./DestinationsCard.jsx";
 import { isDisabled } from "@testing-library/user-event/dist/utils/index.js";
 import Footer from "./Footer1";
 import Navbar from "./Navbar";
-let baseURL = "https://long-puce-octopus-wrap.cyclic.cloud/destinations";
+
 export const Destinations = () => {
   const bg__color = "green.100";
   const [data, setData] = useState([]);
@@ -27,48 +27,46 @@ export const Destinations = () => {
   const [ratings, setRatings] = useState("");
   const [input, setInput] = useState("");
   const [page, setPage] = useState(1);
-  // const Url = (Sort, RatingsFilter, Order, Ratings) => {
-  //   let URL = `https://ecotourism-msze.onrender.com/destinations?_limit=12&_page=${page}`;
+  const Url = (Sort, RatingsFilter, Order, Ratings) => {
+    let URL = `https://long-puce-octopus-wrap.cyclic.cloud/destinations?page=${page}`;
 
-  //   if (Sort && ratingsFilter) {
-  //     return `${URL}&_grade=${ratings}&_sort=fees&_order=${Order}&grade=${ratings}`;
-  //   } else if (Sort) {
-  //     if (Order == "") {
-  //       return URL;
-  //     }
-  //     return `${URL}&_sort=fees&_order=${Order}`;
-  //   } else if (RatingsFilter) {
-  //     return `${URL}&grade=${Ratings}`;
-  //   }
+    if (Sort && ratingsFilter) {
+      return `${URL}&rating=${ratings}&sort=fees&order=${Order}`;
+    } else if (Sort) {
+      if (Order == "") {
+        return URL;
+      }
+      return `${URL}&sort=fees&order=${Order}`;
+    } else if (RatingsFilter) {
+      return `${URL}&rating=${Ratings}`;
+    }
 
-  //   return URL;
-  // };
+    return URL;
+  };
 
-  // const loadUrl = Url(sort, order);
+  const loadUrl = Url(sort, order);
 
   const getData = async (URL) => {
+    console.log(URL);
     try {
       setLoading(true);
       // console.log("trying");
-      // let res = await axios.get(`${URL}`);
       await axios
-        .get(baseURL, {
+        .get(URL, {
           headers: {
             Authorization: localStorage.getItem("userToken"),
           },
         })
         .then((res) => {
-          console.log("authenticated");
-          console.log(baseURL);
-          console.log(res.data.data);
+          console.log(res);
           setData(res.data.data);
         })
         .catch((e) => {
-          console.log("who dis");
+          console.log("error while connecting to API");
           console.log(e);
         });
       //  console.log(res.data);
-      // setData(res.data);
+
       // console.log(res.data);
       setLoading(false);
     } catch (error) {
@@ -77,46 +75,48 @@ export const Destinations = () => {
   };
 
   const handleSort = (e) => {
-    // if (e.target.value == "") {
-    //   setSort(false);
-    // } else {
-    //   setSort(true);
-    // }
-    // setOrder(e.target.value);
-    // let SortUrl = Url(true, ratingsFilter, e.target.value);
-    // console.log(SortUrl);
-    // getData(SortUrl);
-    baseURL += `?sort=fees&order=asc`;
-    getData();
+    if (e.target.value == "") {
+      setSort(false);
+    } else {
+      setSort(true);
+    }
+    setOrder(e.target.value);
+
+    let SortUrl = Url(true, ratingsFilter, e.target.value);
+    console.log(SortUrl);
+    getData(SortUrl);
   };
 
   const handleRating = (e) => {
-    // if (e.target.value == "") {
-    //   setRatingsFilter(false);
-    // } else {
-    //   setRatingsFilter(true);
-    // }
-    // setRatings(e.target.value);
-    // let ratingsUrl = Url(sort, true, order, e.target.value);
-    // console.log(e.target.value);
-    // console.log(ratingsUrl);
-    // getData(ratingsUrl);
+    if (e.target.value == "") {
+      setRatingsFilter(false);
+    } else {
+      setRatingsFilter(true);
+    }
+    setRatings(e.target.value);
+    let ratingsUrl = Url(sort, true, order, e.target.value);
+    console.log(e.target.value);
+    console.log(ratingsUrl);
+    getData(ratingsUrl);
   };
   // console.log(loadUrl);
 
   //handle Input
   const handleInput = (e) => {
+    if (e.target.value === "") {
+      let Url = `https://long-puce-octopus-wrap.cyclic.cloud/destinations?page=${page}`;
+      getData(Url);
+    }
     setInput(e.target.value);
   };
 
   const handleSearch = () => {
-    // console.log("clicked");
-    // let Url = `https://ecotourism-msze.onrender.com/destinations?_limit=12&_page=${page}&q=${input}`;
-    // getData(Url);
+    console.log("clicked");
+    let Url = `https://long-puce-octopus-wrap.cyclic.cloud/destinations?page=${page}&q=${input}`;
+    getData(Url);
   };
-
   useEffect(() => {
-    getData();
+    getData(loadUrl);
   }, []);
 
   return (
@@ -165,7 +165,7 @@ export const Destinations = () => {
             <Button
               onClick={() => {
                 setPage(page - 1);
-                getData();
+                getData(loadUrl);
               }}
               isDisabled={page - 1 <= 0}
             >
@@ -176,7 +176,7 @@ export const Destinations = () => {
               onClick={() => {
                 setPage(page + 1);
 
-                getData();
+                getData(loadUrl);
               }}
             >
               NextPage

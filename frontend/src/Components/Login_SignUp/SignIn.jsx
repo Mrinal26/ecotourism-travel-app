@@ -49,7 +49,7 @@ const Signin = () => {
       email,
       password,
     };
-    const users = await axios
+    await axios
       .post("https://long-puce-octopus-wrap.cyclic.cloud/login", payload)
       .then((res) => {
         if (res.data.token) {
