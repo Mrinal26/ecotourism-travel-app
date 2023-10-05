@@ -54,7 +54,7 @@ export const DestinationsCard = ({ prop, Loading }) => {
             {image ? (
               <Image
                 src={image}
-                boxSize="350px 200px "
+                boxSize="350px 200px"
                 borderRadius="xl"
                 objectFit="cover"
                 opacity="1"

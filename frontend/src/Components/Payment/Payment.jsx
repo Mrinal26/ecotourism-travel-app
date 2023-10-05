@@ -145,7 +145,6 @@ function Payment() {
       });
     }
   };
-  //asds
   return (
     <>
       <Navbar />

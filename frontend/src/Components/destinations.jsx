@@ -1,124 +1,84 @@
 import React, { useEffect, useState } from "react";
 
 import "./destinations.css";
-import {
-  Box,
-  Button,
-  Center,
-  Flex,
-  Heading,
-  Input,
-  Select,
-} from "@chakra-ui/react";
-import axios, { Axios } from "axios";
+import { Box, Button, Flex, Heading, Input, Select } from "@chakra-ui/react";
+import axios from "axios";
 import { Search2Icon } from "@chakra-ui/icons";
 import { DestinationsCard } from "./DestinationsCard.jsx";
-import { isDisabled } from "@testing-library/user-event/dist/utils/index.js";
 import Footer from "./Footer1";
 import Navbar from "./Navbar";
-
+let initState = {
+  data: [],
+  loading: false,
+  sort: false,
+  order: "",
+  ratingsFilter: false,
+  ratings: "",
+  input: "",
+  page: 1,
+};
 export const Destinations = () => {
-  const bg__color = "green.100";
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [sort, setSort] = useState(false);
-  const [order, setOrder] = useState("");
-  const [ratingsFilter, setRatingsFilter] = useState(false);
-  const [ratings, setRatings] = useState("");
-  const [input, setInput] = useState("");
-  const [page, setPage] = useState(1);
-  const Url = (Sort, RatingsFilter, Order, Ratings) => {
-    let URL = `https://long-puce-octopus-wrap.cyclic.cloud/destinations?page=${page}`;
-
-    if (Sort && ratingsFilter) {
-      return `${URL}&rating=${ratings}&sort=fees&order=${Order}`;
-    } else if (Sort) {
-      if (Order == "") {
-        return URL;
-      }
-      return `${URL}&sort=fees&order=${Order}`;
-    } else if (RatingsFilter) {
-      return `${URL}&rating=${Ratings}`;
-    }
-
-    return URL;
-  };
-
-  const loadUrl = Url(sort, order);
-
-  const getData = async (URL) => {
-    console.log(URL);
+  const [pagedata, setPagedata] = useState(initState);
+  const handleSearch = async () => {
     try {
-      setLoading(true);
-      // console.log("trying");
-      await axios
-        .get(URL, {
+      const res = await axios.get(
+        `https://long-puce-octopus-wrap.cyclic.cloud/destinations?q=${pagedata.input}`,
+        {
           headers: {
             Authorization: localStorage.getItem("userToken"),
           },
-        })
-        .then((res) => {
-          console.log(res);
-          setData(res.data.data);
-        })
-        .catch((e) => {
-          console.log("error while connecting to API");
-          console.log(e);
-        });
-      //  console.log(res.data);
-
-      // console.log(res.data);
-      setLoading(false);
+        }
+      );
+      setPagedata({ ...pagedata, data: res.data.data });
     } catch (error) {
       console.log(error);
     }
   };
-
-  const handleSort = (e) => {
-    if (e.target.value == "") {
-      setSort(false);
-    } else {
-      setSort(true);
-    }
-    setOrder(e.target.value);
-
-    let SortUrl = Url(true, ratingsFilter, e.target.value);
-    console.log(SortUrl);
-    getData(SortUrl);
-  };
-
-  const handleRating = (e) => {
-    if (e.target.value == "") {
-      setRatingsFilter(false);
-    } else {
-      setRatingsFilter(true);
-    }
-    setRatings(e.target.value);
-    let ratingsUrl = Url(sort, true, order, e.target.value);
-    console.log(e.target.value);
-    console.log(ratingsUrl);
-    getData(ratingsUrl);
-  };
-  // console.log(loadUrl);
-
-  //handle Input
   const handleInput = (e) => {
-    if (e.target.value === "") {
-      let Url = `https://long-puce-octopus-wrap.cyclic.cloud/destinations?page=${page}`;
-      getData(Url);
-    }
-    setInput(e.target.value);
+    setPagedata({
+      ...pagedata,
+      input: e.target.value,
+    });
   };
+  const handleRating = (e) => {
+    setPagedata({ ...pagedata, ratings: e.target.value });
+  };
+  const handleSort = (e) => {
+    setPagedata({
+      ...pagedata,
+      sort: true,
+      order: e.target.value,
+    });
+  };
+  const handleReset = () => {
+    setPagedata(initState);
+  };
+  const getData = async () => {
+    let url = `https://long-puce-octopus-wrap.cyclic.cloud/destinations?page=${pagedata.page}`;
+    if (pagedata.sort && pagedata.ratings)
+      url += `&sort=fees&order=${pagedata.order}&rating=${pagedata.ratings}`;
+    else if (pagedata.sort) url += `&sort=fees&order=${pagedata.order}`;
+    else if (pagedata.ratings) url += `&rating=${pagedata.ratings}`;
+    console.log(url);
+    try {
+      const res = await axios.get(url, {
+        headers: {
+          Authorization: localStorage.getItem("userToken"),
+        },
+      });
 
-  const handleSearch = () => {
-    console.log("clicked");
-    let Url = `https://long-puce-octopus-wrap.cyclic.cloud/destinations?page=${page}&q=${input}`;
-    getData(Url);
+      console.log(res);
+      setPagedata({
+        ...pagedata,
+        data: res.data.data,
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
   useEffect(() => {
-    getData(loadUrl);
-  }, []);
-
+    getData();
+  }, [pagedata.page, pagedata.sort, pagedata.order, pagedata.ratings]);
   return (
     <>
       <Navbar />
@@ -154,29 +114,39 @@ export const Destinations = () => {
           <Button>
             <Search2Icon onClick={handleSearch} />
           </Button>
+          <Button onClick={handleReset}>Reset</Button>
         </Box>
         <Flex wrap={"wrap"} justifyContent={"Center"} gap={3} key={2}>
-          {data?.map((e) => {
-            return <DestinationsCard key={e.id} prop={e} Loading={loading} />;
+          {pagedata.data?.map((e) => {
+            return (
+              <DestinationsCard
+                key={e.id}
+                prop={e}
+                Loading={pagedata.loading}
+              />
+            );
           })}
         </Flex>
         <Flex justifyContent={"center"}>
           <Box>
             <Button
               onClick={() => {
-                setPage(page - 1);
-                getData(loadUrl);
+                setPagedata({
+                  ...pagedata,
+                  page: pagedata.page - 1,
+                });
               }}
-              isDisabled={page - 1 <= 0}
+              isDisabled={pagedata.page - 1 <= 0}
             >
               PrevPage
             </Button>
-            <Button m={"2"}>{page}</Button>
+            <Button m={"2"}>{pagedata.page}</Button>
             <Button
               onClick={() => {
-                setPage(page + 1);
-
-                getData(loadUrl);
+                setPagedata({
+                  ...pagedata,
+                  page: pagedata.page + 1,
+                });
               }}
             >
               NextPage
