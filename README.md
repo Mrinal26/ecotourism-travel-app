@@ -15,4 +15,4 @@ A implemenation of a travel application concept. Here, you can browse through ec
 <h4>Browse through destinations and customize your experience with filtering,sorting,pagination and searching.</h4>
 <img src="https://i.ibb.co/yQJ3hd5/Screenshot-173.png" alt="Screenshot-173" border="0">
 
-<h4>Checkout the live page for the full content. Hope you enjoy it!</h4>
+<h4>Checkout the live page in the description for the full content. Hope you enjoy it!</h4>
